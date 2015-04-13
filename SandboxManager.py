@@ -1,10 +1,11 @@
-
-
 __author__ = 'daltrogama'
+# coding=UTF-8
 
 import string
+import tempfile
 import random
 import os
+import time
 from zipfile import ZipFile
 
 class SandboxManager():
@@ -18,13 +19,19 @@ class SandboxManager():
 
     def get_algorithm(self, algorithm_bin_file):
 
-        tmp_file = os.tempnam()
         res_dir = os.path.join(self.algorithm_root, algorithm_bin_file)
-        os.mkdir(res_dir)
+        if not os.path.exists(res_dir):
+            os.makedirs(res_dir)
+        else:
+            return res_dir
 
+        tmp_file = tempfile.gettempprefix()+"algo.zip"
+
+        # Fazer download
         self.connector.download_algo_zip(algorithm_bin_file, tmp_file)
 
-        zipf = ZipFile(name=tmp_file)
+        # Descompactar algoritmo
+        zipf = ZipFile(tmp_file)
         try:
             zipf.extractall(path=res_dir)
             zipf.close()
@@ -33,20 +40,84 @@ class SandboxManager():
 
         os.remove(tmp_file)
 
+        # Dando permissões completas aos arquivos do algoritmo
+        for dirpath, dirnames, filenames in os.walk(res_dir):
+            for filename in filenames:
+                path = os.path.join(dirpath, filename)
+                os.chmod(path, 0o777)
+
         return res_dir
 
 
     def get_project(self, project_prfx, project_input_files):
 
         proj_sandbox = os.path.join(self.project_root, project_prfx)
+        if not os.path.exists(proj_sandbox):
+            os.makedirs(proj_sandbox)
+
+        metadata_dir = os.path.join(proj_sandbox,".az_sga_proj_metadata")
 
         for f in project_input_files:
+
+            f_path = os.path.dirname(os.path.join(proj_sandbox,f))
+            if not os.path.exists(f_path):
+                os.makedirs(f_path)
+
             self.connector.download_file_to_project(project_prfx, f, proj_sandbox)
+
+            # Inclui o arquivo na pasta com os metadados básicos, para identificar arquivos a
+            # a serem enviados de volta para o repositório
+            if not os.path.exists(metadata_dir):
+                os.makedirs(metadata_dir)
+
+            # Arquivo de metadados:
+            # Primeira linha: Timestamp da última modificação
+            # Segunda linha: Tamanho do arquivo
+
+            f_one = f.replace('/', '_').replace('\\', '_')
+
+            metadata_file = os.path.join(metadata_dir, f_one)
+            f_file = open(metadata_file, "w+")
+            f_file.write(time.ctime(os.path.getmtime(os.path.join(proj_sandbox,f)))+"\n")
+            f_file.write(str(os.path.getsize(os.path.join(proj_sandbox,f))))
+            f_file.close()
 
         return proj_sandbox
 
 
     def upload_project_modified_files(self, project_prfx):
+
+        proj_sandbox = os.path.join(self.project_root, project_prfx)
+
+        metadata_dir = os.path.join(proj_sandbox, ".az_sga_proj_metadata")
+
+        for dirpath, dirnames, filenames in os.walk(proj_sandbox):
+            for filename in filenames:
+                path = os.path.join(dirpath, filename)
+                if path.find(".az_sga_proj_metadata") >= 0:
+                    continue
+                rel_path = path.replace(proj_sandbox,'').lstrip('/').lstrip('\\')
+
+                f_one = rel_path.replace('/', '_').replace('\\', '_')
+                metadata_file = os.path.join(metadata_dir, f_one)
+                need_upload = False
+                if os.path.exists(metadata_file):
+                    need_upload = True
+                else:
+                    f_file = open(metadata_file, "r")
+                    file_time = f_file.readline()
+                    file_size = f_file.readline()
+                    if file_time != time.ctime(os.path.getmtime(os.path.join(proj_sandbox, path))):
+                        need_upload = True
+
+                    elif file_size != str(os.path.getsize(os.path.join(proj_sandbox,path))):
+                        need_upload = True
+
+                    f_file.close()
+
+                if need_upload:
+                    self.connector.upload_proj_file(project_prfx, f, proj_sandbox)
+
         return
 
 

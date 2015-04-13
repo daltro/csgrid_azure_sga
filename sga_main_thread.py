@@ -63,7 +63,7 @@ class MyDaemon(Daemon):
                             execution_metadata = None
                     else:
                         trace(" nada para fazer. Aguardando tempo aleatório para polling.")
-                        time.sleep(random.randint(10,200)/10.0)
+                        time.sleep(random.randint(10,20)/10.0)
 
                 else:
                     if running_process.poll() is not None:
