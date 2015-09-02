@@ -1,10 +1,16 @@
 #!/usr/bin/python
 #  coding=UTF-8
 
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
 import sys, time, json
 from daemon import Daemon
 from azure.servicebus import ServiceBusService, Message, Queue
 from azure.storage.blob import BlobService
+from azure.servicemanagement import *
 from sga_shared_data_structures import CommandMetadata
 import datetime, os, socket
 
@@ -14,6 +20,15 @@ def create(config):
 class AzureConnector():
 
     def __init__(self, config):
+
+        tree = ET.parse('SharedConfig.xml')
+        self.myMachineName = tree.find('//Instance').get("id")
+
+        self.sms = ServiceManagementService(
+            subscription_id=config.get("azure", "subscription_id"),
+            cert_file=config.get("azure", "cert_file")
+        );
+        self.sms.list_role_sizes()
 
         self.bus_service = ServiceBusService(
             service_namespace=config.get("azure", "bus_namespace"),
@@ -36,7 +51,7 @@ class AzureConnector():
 
     def check_new_tasks(self):
 
-        message = self.bus_service.receive_queue_message(self.command_queue, peek_lock=False, timeout=60)
+        message = self.bus_service.receive_queue_message(self.command_queue, peek_lock=False, timeout=120)
 
         if message is None or message.body is None:
             return None
@@ -135,4 +150,7 @@ class AzureConnector():
                     print("Erro de conexão com serviço. Retentando...")
 
     def shutdown_myself(self):
-        print("Morri.")
+        # A máquina virtual irá cometer suicídio.
+        print("Removendo máquina virtual da nuvem...")
+        #self.sms.delete_hosted_service(self.myMachineName)
+        exit()
