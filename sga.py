@@ -1,9 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+#  coding=UTF-8
+
 import sys
-from sga_main_thread import MyDaemon
+from sga_main_thread import SgaDaemon
 
 if __name__ == "__main__":
-    daemon = MyDaemon('/tmp/sga-daemon.pid')
+    daemon = SgaDaemon('/tmp/sga-daemon.pid')
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
             daemon.start()

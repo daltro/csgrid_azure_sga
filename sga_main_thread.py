@@ -1,5 +1,5 @@
-__author__ = 'daltro@tecgraf.puc-rio.br'
-# coding=UTF-8
+#!/usr/bin/python
+#  coding=UTF-8
 
 from daemon import Daemon
 from sga_shared_data_structures import CommandMetadata
@@ -17,7 +17,7 @@ def trace(message):
         print message
 
 
-class MyDaemon(Daemon):
+class SgaDaemon(Daemon):
 
     def run(self):
 
@@ -62,8 +62,8 @@ class MyDaemon(Daemon):
                             print("Não foi possível executar comando recebido! Abortando este comando.")
                             execution_metadata = None
                     else:
-                        trace(" nada para fazer. Aguardando tempo aleatório para polling.")
-                        time.sleep(random.randint(10,20)/10.0)
+                        trace(" nada para fazer.")
+                        self.__shutdown_myself()
 
                 else:
                     if running_process.poll() is not None:
@@ -138,3 +138,5 @@ class MyDaemon(Daemon):
     def __send_status(self, main_status):
         self.connector.send_status(main_status)
 
+    def __shutdown_myself(self):
+        self.connector.shutdown_myself()

@@ -1,3 +1,6 @@
+#!/usr/bin/python
+#  coding=UTF-8
+
 from subprocess import Popen
 import os, pwd, psutil
 

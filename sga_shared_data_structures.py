@@ -1,4 +1,5 @@
-__author__ = 'daltrogama'
+#!/usr/bin/python
+#  coding=UTF-8
 
 from datetime import datetime
 
@@ -6,7 +7,7 @@ class CommandMetadata:
 
     def __init__(self,
                  command_id,
-                 algorithm_bin_file,
+                 algorithm_directory,
                  project_prfx,
                  project_input_files,
                  algorithm_executable_name,
@@ -15,7 +16,7 @@ class CommandMetadata:
                  machine_size):
 
         assert isinstance(command_id, basestring)
-        assert isinstance(algorithm_bin_file, basestring)
+        assert isinstance(algorithm_directory, basestring)
         assert isinstance(project_prfx, basestring)
         assert isinstance(project_input_files, list)
         assert isinstance(algorithm_executable_name, basestring)
@@ -24,7 +25,7 @@ class CommandMetadata:
         assert isinstance(machine_size, basestring)
 
         self.command_id = command_id
-        self.algorithm_bin_file = algorithm_bin_file
+        self.algorithm_bin_file = algorithm_directory
         self.project_prfx = project_prfx
         self.project_input_files = project_input_files
         self.algorithm_executable_name = algorithm_executable_name

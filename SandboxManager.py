@@ -1,5 +1,5 @@
-__author__ = 'daltrogama'
-# coding=UTF-8
+#!/usr/bin/python
+#  coding=UTF-8
 
 import string
 import tempfile
@@ -17,28 +17,21 @@ class SandboxManager():
         return
 
 
-    def get_algorithm(self, algorithm_bin_file):
+    def get_algorithm(self, algorithm_prfx):
 
-        res_dir = os.path.join(self.algorithm_root, algorithm_bin_file)
+        res_dir = os.path.join(self.algorithm_root, algorithm_prfx)
         if not os.path.exists(res_dir):
             os.makedirs(res_dir)
         else:
             return res_dir
 
-        tmp_file = tempfile.gettempprefix()+"algo.zip"
+        for f in self.connector.list_algo_files(algorithm_prfx):
 
-        # Fazer download
-        self.connector.download_algo_zip(algorithm_bin_file, tmp_file)
+            f_path = os.path.dirname(os.path.join(self.algorithm_root,f))
+            if not os.path.exists(f_path):
+                os.makedirs(f_path)
 
-        # Descompactar algoritmo
-        zipf = ZipFile(tmp_file)
-        try:
-            zipf.extractall(path=res_dir)
-            zipf.close()
-        finally:
-            zipf.close()
-
-        os.remove(tmp_file)
+            self.connector.download_file_to_algo(f, f_path)
 
         # Dando permissões completas aos arquivos do algoritmo
         for dirpath, dirnames, filenames in os.walk(res_dir):
@@ -83,7 +76,6 @@ class SandboxManager():
             f_file.close()
 
         return proj_sandbox
-
 
     def upload_project_modified_files(self, project_prfx):
 
