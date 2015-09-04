@@ -74,6 +74,7 @@ class SandboxManager():
                 self.chmodPath(f_path)
 
             self.connector.download_file_to_project(project_prfx, f, self.project_root)
+            os.chmod(os.path.join(proj_sandbox,f), 0o777)
 
             # Inclui o arquivo na pasta com os metadados básicos, para identificar arquivos a
             # a serem enviados de volta para o repositório
