@@ -22,13 +22,12 @@ class AzureConnector():
     def __init__(self, config):
 
         tree = ET.parse('SharedConfig.xml')
-        self.myMachineName = tree.find('//Instance').get("id")
+        self.myMachineName = tree.find('.//Instance').get("id")
 
         self.sms = ServiceManagementService(
             subscription_id=config.get("azure", "subscription_id"),
             cert_file=config.get("azure", "cert_file")
         );
-        self.sms.list_role_sizes()
 
         self.bus_service = ServiceBusService(
             service_namespace=config.get("azure", "bus_namespace"),
@@ -153,4 +152,8 @@ class AzureConnector():
         # A máquina virtual irá cometer suicídio.
         print("Removendo máquina virtual da nuvem...")
         #self.sms.delete_hosted_service(self.myMachineName)
-        exit()
+        self.sms.shutdown_role(service_name=self.myMachineName,
+                               deployment_name=self.myMachineName,
+                               role_name=self.myMachineName,
+                               post_shutdown_action="StoppedDeallocated")
+        exit(0)
