@@ -20,7 +20,7 @@ class SandboxManager():
         p = path
         while os.path.exists(p):
             os.chmod(p, 0o777)
-            p = os.path.pardir(p)
+            p = os.path.dirname(p)
 
     def get_algorithm(self, algorithm_prfx):
 
