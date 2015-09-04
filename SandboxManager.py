@@ -16,13 +16,18 @@ class SandboxManager():
         self.connector = connector
         return
 
+    def chmodPath(self, path):
+        p = path
+        while os.path.exists(p):
+            os.chmod(p, 0o777)
+            p = os.path.pardir(p)
 
     def get_algorithm(self, algorithm_prfx):
 
         res_dir = os.path.join(self.algorithm_root, algorithm_prfx)
         if not os.path.exists(res_dir):
             os.makedirs(res_dir)
-            os.chmod(res_dir, 0o777)
+            self.chmodPath(res_dir)
         else:
             return res_dir
 
@@ -31,7 +36,7 @@ class SandboxManager():
             f_path = os.path.dirname(os.path.join(self.algorithm_root,f))
             if not os.path.exists(f_path):
                 os.makedirs(f_path)
-                os.chmod(f_path, 0o777)
+                self.chmodPath(f_path)
 
             self.connector.download_file_to_algo(f, self.algorithm_root)
 
@@ -49,7 +54,7 @@ class SandboxManager():
         proj_sandbox = os.path.join(self.project_root, project_prfx)
         if not os.path.exists(proj_sandbox):
             os.makedirs(proj_sandbox)
-            os.chmod(proj_sandbox, 0o777)
+            self.chmodPath(proj_sandbox)
 
         metadata_dir = os.path.join(proj_sandbox,".az_sga_proj_metadata")
 
@@ -58,7 +63,7 @@ class SandboxManager():
             f_path = os.path.dirname(os.path.join(proj_sandbox,f))
             if not os.path.exists(f_path):
                 os.makedirs(f_path)
-                os.chmod(f_path, 0o777)
+                self.chmodPath(f_path)
 
             self.connector.download_file_to_project(project_prfx, f, self.project_root)
 
