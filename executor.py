@@ -52,9 +52,11 @@ def execute(execution):
                     fout.write(line.replace('/AzureBlobStorage/', '/tmp/'))
         os.remove(execution.algorithm_params[0])
         os.rename(execution.algorithm_params[0]+".new", execution.algorithm_params[0])
+        os.chmod(execution.algorithm_params[0], 0o777)
         logs_path = os.path.join(os.path.dirname(execution.algorithm_params[0]), 'logs')
         if not os.path.exists(logs_path):
             os.makedirs(logs_path)
+            os.chmod(logs_path, 0o777)
 
     params = [executable] + execution.algorithm_params
 
