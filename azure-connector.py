@@ -60,11 +60,11 @@ class AzureConnector():
         if message is None or message.body is None:
             return None
 
-        job_description = json.loads(message.body)
+        job_description = json.loads(message.body.replace('/AzureBlobStorage/', ''))
 
         command = CommandMetadata(
             command_id = job_description["command_id"],
-            algorithm_bin_file = job_description["algorithm_bin_file"],
+            algorithm_directory = job_description["algorithm_prfx"],
             project_prfx = job_description["project_prfx"],
             project_input_files = job_description["project_input_files"],
             algorithm_executable_name = job_description["algorithm_executable_name"],
@@ -87,7 +87,7 @@ class AzureConnector():
         return result
 
     def download_algo_zip(self, algorithm_bin_file, tmp_file):
-
+        print "download_algo_zip(algorithm_bin_file="+algorithm_bin_file+", tmp_file="+tmp_file+")"
         for tries in range(1,5):
             try:
                 self.storage.get_blob_to_path(self.algo_storage_name, algorithm_bin_file, tmp_file,
@@ -95,32 +95,69 @@ class AzureConnector():
                                  progress_callback=None)
                 break
 
-            except:
+            except Exception as e:
 
                 if tries == 5:
                     print("Muitos erros de conexão. Operação abortada.")
                 else:
-                    print("Erro de conexão com serviço. Retentando...")
+                    print("Erro de conexão com serviço. Retentando..." + e.__str__())
 
     def download_file_to_project(self, project_name, blob_name, dir):
-
+        print "download_file_to_project(project_name="+project_name+", blob_name="+blob_name+", dir="+dir+")"
         for tries in range(1,5):
             try:
                 self.storage.get_blob_to_path(self.proj_storage_name,
                                               os.path.join(project_name,blob_name),
-                                              os.path.join(dir,blob_name),
+                                              os.path.join(dir,os.path.join(project_name,blob_name)),
                                               open_mode='wb', snapshot=None, x_ms_lease_id=None,
                                               progress_callback=None)
                 break
 
-            except:
+            except Exception as e:
 
                 if tries == 5:
                     print("Muitos erros de conexão. Operação abortada.")
                 else:
-                    print("Erro de conexão com serviço. Retentando...")
+                    print("Erro de conexão com serviço. Retentando..." + e.__str__())
+
+    def download_file_to_project(self, project_name, blob_name, dir):
+        print "download_file_to_project(project_name="+project_name+", blob_name="+blob_name+", dir="+dir+")"
+        for tries in range(1,5):
+            try:
+                self.storage.get_blob_to_path(self.proj_storage_name,
+                                              os.path.join(project_name,blob_name),
+                                              os.path.join(dir,os.path.join(project_name,blob_name)),
+                                              open_mode='wb', snapshot=None, x_ms_lease_id=None,
+                                              progress_callback=None)
+                break
+
+            except Exception as e:
+
+                if tries == 5:
+                    print("Muitos erros de conexão. Operação abortada.")
+                else:
+                    print("Erro de conexão com serviço. Retentando..." + e.__str__())
+
+    def upload_proj_file(self, project_name, blob_name, dir):
+        print "upload_proj_file(project_name="+project_name+", blob_name="+blob_name+", dir="+dir+")"
+        if blob_name[0] == '/':
+            blob_name = blob_name[1:]
+        for tries in range(1,5):
+            try:
+                self.storage.put_block_blob_from_path(self.proj_storage_name,
+                                              os.path.join(project_name,blob_name),
+                                              os.path.join(dir,os.path.join(project_name,blob_name)))
+                break
+
+            except Exception as e:
+
+                if tries == 5:
+                    print("Muitos erros de conexão. Operação abortada.")
+                else:
+                    print("Erro de conexão com serviço. Retentando..." + e.__str__())
 
     def download_file_to_algo(self, blob_name, dir):
+        print "download_file_to_algo(blob_name="+blob_name+", dir="+dir+")"
 
         for tries in range(1,5):
             try:
@@ -131,27 +168,27 @@ class AzureConnector():
                                               progress_callback=None)
                 break
 
-            except:
+            except Exception as e:
 
                 if tries == 5:
                     print("Muitos erros de conexão. Operação abortada.")
                 else:
-                    print("Erro de conexão com serviço. Retentando...")
+                    print("Erro de conexão com serviço. Retentando..." + e.__str__())
 
 
     def send_status(self, main_status):
         for tries in range(1,5):
             try:
                 self.bus_service.send_topic_message(topic_name=self.status_topic,
-                                                    message=main_status)
+                                                    message=Message(main_status))
                 break
 
-            except:
+            except Exception as e:
 
                 if tries == 5:
                     print("Muitos erros de conexão. Operação abortada.")
                 else:
-                    print("Erro de conexão com serviço. Retentando...")
+                    print("Erro de conexão com serviço. Retentando..." + e.__str__())
 
     def shutdown_myself(self):
         # A máquina virtual irá cometer suicídio.
@@ -161,4 +198,4 @@ class AzureConnector():
         #                       deployment_name=self.myMachineName,
         #                       role_name=self.myMachineName,
         #                       post_shutdown_action="StoppedDeallocated")
-        exit(0)
+        #exit(0)

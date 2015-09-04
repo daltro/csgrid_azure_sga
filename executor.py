@@ -42,7 +42,20 @@ def execute(execution):
     env['PWD'] = execution.project_sandbox_dir
     env['USER'] = user_name
 
-    executable = execution.algorithm_dir+"/"+execution.algorithm_executable
+    executable = execution.algorithm_executable
+
+    if execution.algorithm_params[0].endswith('.ksh'):
+        execution.algorithm_params[0] = '/tmp/'+execution.algorithm_params[0]
+        with open(execution.algorithm_params[0]+".new", "wt") as fout:
+            with open(execution.algorithm_params[0], "rt") as fin:
+                for line in fin:
+                    fout.write(line.replace('/AzureBlobStorage/', '/tmp/'))
+        os.remove(execution.algorithm_params[0])
+        os.rename(execution.algorithm_params[0]+".new", execution.algorithm_params[0])
+        logs_path = os.path.join(os.path.dirname(execution.algorithm_params[0]), 'logs')
+        if not os.path.exists(logs_path):
+            os.makedirs(logs_path)
+
     params = [executable] + execution.algorithm_params
 
     p = Popen(cwd=execution.project_sandbox_dir,

@@ -31,7 +31,7 @@ class SandboxManager():
             if not os.path.exists(f_path):
                 os.makedirs(f_path)
 
-            self.connector.download_file_to_algo(f, f_path)
+            self.connector.download_file_to_algo(f, self.algorithm_root)
 
         # Dando permissões completas aos arquivos do algoritmo
         for dirpath, dirnames, filenames in os.walk(res_dir):
@@ -56,7 +56,7 @@ class SandboxManager():
             if not os.path.exists(f_path):
                 os.makedirs(f_path)
 
-            self.connector.download_file_to_project(project_prfx, f, proj_sandbox)
+            self.connector.download_file_to_project(project_prfx, f, self.project_root)
 
             # Inclui o arquivo na pasta com os metadados básicos, para identificar arquivos a
             # a serem enviados de volta para o repositório
@@ -93,13 +93,14 @@ class SandboxManager():
                 f_one = rel_path.replace('/', '_').replace('\\', '_')
                 metadata_file = os.path.join(metadata_dir, f_one)
                 need_upload = False
-                if os.path.exists(metadata_file):
+                if not os.path.exists(metadata_file):
                     need_upload = True
                 else:
                     f_file = open(metadata_file, "r")
-                    file_time = f_file.readline()
+                    file_time = f_file.readline().replace('\n','').replace('\r','')
                     file_size = f_file.readline()
-                    if file_time != time.ctime(os.path.getmtime(os.path.join(proj_sandbox, path))):
+                    original_file_time = time.ctime(os.path.getmtime(os.path.join(proj_sandbox, path)))
+                    if file_time != original_file_time:
                         need_upload = True
 
                     elif file_size != str(os.path.getsize(os.path.join(proj_sandbox,path))):
@@ -108,7 +109,8 @@ class SandboxManager():
                     f_file.close()
 
                 if need_upload:
-                    self.connector.upload_proj_file(project_prfx, f, proj_sandbox)
+                    blob_name=os.path.join(project_prfx, (path.replace(proj_sandbox,'')))
+                    self.connector.upload_proj_file(project_prfx, blob_name, self.project_root)
 
         return
 
