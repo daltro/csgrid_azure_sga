@@ -20,10 +20,16 @@ class SandboxManager():
         p = path
         while os.path.exists(p):
             print "Dando permissões para o diretório "+p
-            os.chmod(p, 0o777)
+            try:
+                os.chmod(p, 0o777)
+            except:
+                print "Ignorando "+p
             if p[-1:] == '/':
                 p = p[:-1]
-            p = os.path.dirname(p)
+            p2 = os.path.dirname(p)
+            if p2 == p:
+                break
+            p=p2
 
     def get_algorithm(self, algorithm_prfx):
 
