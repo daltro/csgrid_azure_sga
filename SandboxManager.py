@@ -19,8 +19,11 @@ class SandboxManager():
     def chmodPath(self, path):
         p = path
         while os.path.exists(p):
+            print "Dando permissões para o diretório "+p
             os.chmod(p, 0o777)
-            p = os.path.dirname(p)
+            if p[-1:] == '/':
+                p = p[:-1]
+            p = os.path.basename(p)
 
     def get_algorithm(self, algorithm_prfx):
 
