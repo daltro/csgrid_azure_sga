@@ -50,7 +50,12 @@ class AzureConnector():
 
     def check_new_tasks(self):
 
-        message = self.bus_service.receive_queue_message(self.command_queue, peek_lock=False, timeout=120)
+        for tries in range(1,2):
+            try:
+                message = self.bus_service.receive_queue_message(self.command_queue, peek_lock=False, timeout=60)
+                break
+            except:
+                message = None
 
         if message is None or message.body is None:
             return None
