@@ -18,12 +18,11 @@ class SandboxManager():
 
     def chmodPath(self, path):
         p = path
-        while os.path.exists(p):
-            print "Dando permissões para o diretório "+p
+        while os.path.exists(p) and p != '/':
             try:
                 os.chmod(p, 0o777)
             except:
-                print "Ignorando "+p
+                print "Não dando permissões para "+p
             if p[-1:] == '/':
                 p = p[:-1]
             p2 = os.path.dirname(p)
