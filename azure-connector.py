@@ -193,7 +193,7 @@ class AzureConnector():
     def shutdown_myself(self):
         # A máquina virtual irá cometer suicídio.
         print("Removendo máquina virtual da nuvem...")
-        #self.sms.delete_hosted_service(self.myMachineName)
+        self.sms.delete_hosted_service(self.myMachineName)
         #self.sms.shutdown_role(service_name=self.myMachineName,
         #                       deployment_name=self.myMachineName,
         #                       role_name=self.myMachineName,
