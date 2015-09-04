@@ -23,7 +23,7 @@ class SandboxManager():
             os.chmod(p, 0o777)
             if p[-1:] == '/':
                 p = p[:-1]
-            p = os.path.basename(p)
+            p = os.path.dirname(p)
 
     def get_algorithm(self, algorithm_prfx):
 
