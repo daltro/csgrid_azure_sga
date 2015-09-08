@@ -201,7 +201,9 @@ class AzureConnector():
         print("Removendo máquina virtual da nuvem...")
         for tries in range(1,5):
             try:
-                self.sms.delete_deployment(self.myMachineName)
+                self.sms.delete_deployment(
+                    service_name=self.myMachineName,
+                    deployment_name=self.myMachineName, delete_vhd=True)
                 break
 
             except Exception as e:
