@@ -204,6 +204,7 @@ class AzureConnector():
                 self.sms.delete_deployment(
                     service_name=self.myMachineName,
                     deployment_name=self.myMachineName, delete_vhd=True)
+                exit(0)
                 break
 
             except Exception as e:
@@ -218,4 +219,3 @@ class AzureConnector():
         #                       deployment_name=self.myMachineName,
         #                       role_name=self.myMachineName,
         #                       post_shutdown_action="StoppedDeallocated")
-        #exit(0)
