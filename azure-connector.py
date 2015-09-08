@@ -35,7 +35,13 @@ class AzureConnector():
             shared_access_key_value=config.get("azure", "bus_shared_access_key_value"))
 
         self.command_queue = config.get("azure", "commandQueuePath")
-        self.bus_service.create_queue(self.command_queue)
+        for tries in range(1,10):
+            try:
+                self.bus_service.create_queue(self.command_queue)
+                break
+            except:
+                print "Esperando"
+            
         self.status_topic = config.get("azure", "statusTopicPath")
         self.bus_service.create_queue(self.status_topic)
 
@@ -193,7 +199,19 @@ class AzureConnector():
     def shutdown_myself(self):
         # A máquina virtual irá cometer suicídio.
         print("Removendo máquina virtual da nuvem...")
-        self.sms.delete_hosted_service(self.myMachineName)
+        for tries in range(1,5):
+            try:
+                self.sms.delete_deployment(self.myMachineName)
+                break
+
+            except Exception as e:
+
+                if tries == 5:
+                    print("Muitos erros de conexão. Operação abortada.")
+                else:
+                    print("Erro de conexão com serviço. Retentando..." + e.__str__())
+
+        #self.sms.delete_hosted_service(self.myMachineName)
         #self.sms.shutdown_role(service_name=self.myMachineName,
         #                       deployment_name=self.myMachineName,
         #                       role_name=self.myMachineName,
