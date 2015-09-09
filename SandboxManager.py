@@ -95,11 +95,25 @@ class SandboxManager():
 
         return proj_sandbox
 
+    def upload_log_project_file(self, project_prfx, execution_metadata, out_prfx):
+
+        if out_prfx[0] == '/':
+            out_prfx = out_prfx[1:]
+
+        proj_sandbox = os.path.join(self.project_root, project_prfx)
+        res_file = open(os.path.join(proj_sandbox, out_prfx+'/exec_times.log'), 'wt')
+        res_file.write(execution_metadata.command_id+'\t'+str(execution_metadata.time_download)+'\t'+str(execution_metadata.time_run)+'\t'+str(execution_metadata.time_upload))
+        res_file.close()
+
+        self.connector.upload_proj_file(project_prfx, out_prfx+'/exec_times.log', self.project_root)
+
     def upload_project_modified_files(self, project_prfx):
 
         proj_sandbox = os.path.join(self.project_root, project_prfx)
 
         metadata_dir = os.path.join(proj_sandbox, ".az_sga_proj_metadata")
+
+        out_prfx = None
 
         for dirpath, dirnames, filenames in os.walk(proj_sandbox):
             for filename in filenames:
@@ -128,9 +142,11 @@ class SandboxManager():
 
                 if need_upload:
                     blob_name=os.path.join(project_prfx, (path.replace(proj_sandbox,'')))
+                    if blob_name.endswith("logs/out.log"):
+                        out_prfx = blob_name.replace('/out.log','')
                     self.connector.upload_proj_file(project_prfx, blob_name, self.project_root)
 
-        return
+        return out_prfx
 
 
     def __get_hash_of_dirs(directory, verbose=0):

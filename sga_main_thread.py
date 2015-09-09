@@ -9,6 +9,7 @@ import executor
 import ConfigParser, imp, socket
 
 import time, random
+from datetime import datetime
 
 sga_debug = True
 
@@ -20,7 +21,7 @@ def trace(message):
 class SgaDaemon(Daemon):
 
     def run(self):
-
+        #datetime.now().strftime('%d/%m/%Y %H:%M:%S,%f')
         running_process = None  # Popen()
         execution_metadata = None  # CommandMetadata()
         self.execution_stdout = None
@@ -97,6 +98,7 @@ class SgaDaemon(Daemon):
     def __start_execution(self, execution_metadata):
 
         self.__send_status(execution_metadata, "Downloading")
+        start = time.time()
         algorithm_dir = self.sandbox_manager.get_algorithm(execution_metadata.algorithm_bin_file)
         project_sandbox_dir = self.sandbox_manager.get_project(project_prfx=execution_metadata.project_prfx,
                                                                project_input_files=execution_metadata.project_input_files)
@@ -106,6 +108,9 @@ class SgaDaemon(Daemon):
 
         self.execution_stdout = open("/tmp/out.txt", "w")
 
+        execution_metadata.time_download = (time.time() - start)
+
+        execution_metadata.time_start_run = time.time()
         self.__send_status(execution_metadata, "Running")
         return executor.execute(executor.Execution(
             algorithm_executable=execution_metadata.algorithm_executable_name,
@@ -118,8 +123,13 @@ class SgaDaemon(Daemon):
         ))
 
     def __end_execution(self, execution_metadata):
+        execution_metadata.time_run = (time.time() - execution_metadata.time_start_run)
+        start_upload = time.time()
         self.__send_status(execution_metadata, "Uploading")
-        self.sandbox_manager.upload_project_modified_files(execution_metadata.project_prfx)
+        out_prfx = self.sandbox_manager.upload_project_modified_files(execution_metadata.project_prfx)
+        execution_metadata.time_upload = (time.time() - start_upload)
+        if not out_prfx is None:
+            self.sandbox_manager.upload_log_project_file(execution_metadata.project_prfx, execution_metadata, out_prfx)
         self.__send_status(execution_metadata, "Ended")
 
     def __cancel_execution(self, running_process):
