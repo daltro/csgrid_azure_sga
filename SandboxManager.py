@@ -22,7 +22,7 @@ class SandboxManager():
             try:
                 os.chmod(p, 0o777)
             except:
-                print "Não dando permissões para "+p
+                print "Nao dando permissoes para "+p
             if p[-1:] == '/':
                 p = p[:-1]
             p2 = os.path.dirname(p)

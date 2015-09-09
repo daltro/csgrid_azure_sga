@@ -136,7 +136,7 @@ class SgaDaemon(Daemon):
         return
 
     def __send_status(self, execution_metadata, main_status):
-        status_message = "{cmdId:\"" + execution_metadata.command_id + "\", status:\""+main_status+"\"}"
+        status_message = "{cmdId:\"" + execution_metadata.command_id + "\", status:\""+main_status+"\", vmName:\""+self.connector.myMachineName+"\"}"
         self.connector.send_status(status_message)
 
     def __shutdown_myself(self):
