@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#  coding=UTF-8
+#coding=UTF-8
 
 try:
     import xml.etree.cElementTree as ET
@@ -186,7 +186,7 @@ class AzureConnector():
         for tries in range(1,5):
             try:
                 self.bus_service.send_topic_message(topic_name=self.status_topic,
-                                                    message=Message(main_status))
+                                                    message=Message(main_status.encode('utf-8')))
                 break
 
             except Exception as e:
@@ -197,6 +197,9 @@ class AzureConnector():
                     print("Erro de conexão com serviço. Retentando..." + e.__str__())
 
     def shutdown_myself(self):
+
+        return
+
         # A máquina virtual irá cometer suicídio.
         print("Removendo máquina virtual da nuvem...")
         for tries in range(1,5):

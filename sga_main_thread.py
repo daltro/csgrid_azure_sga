@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#  coding=UTF-8
+#coding=UTF-8
 
 from daemon import Daemon
 from sga_shared_data_structures import CommandMetadata
@@ -79,12 +79,12 @@ class SgaDaemon(Daemon):
                         if self.__check_cancel_request(execution_metadata):
                             trace("Cancelamento detectado. Interrompendo processo...")
                             # Execução cancelada!
-                            self.__send_status("Canceling")
+                            self.__send_status(execution_metadata, "Canceling")
                             self.__cancel_execution(running_process)
-                            self.__send_status("Canceled")
+                            self.__send_status(execution_metadata, "Canceled")
                         else:
                             # Execução acontecendo normalmente...
-                            self.__send_status("Running")
+                            self.__send_status(execution_metadata, "Running")
 
                 time.sleep(polling_time_secs)
 
@@ -96,7 +96,7 @@ class SgaDaemon(Daemon):
 
     def __start_execution(self, execution_metadata):
 
-        self.__send_status("Downloading")
+        self.__send_status(execution_metadata, "Downloading")
         algorithm_dir = self.sandbox_manager.get_algorithm(execution_metadata.algorithm_bin_file)
         project_sandbox_dir = self.sandbox_manager.get_project(project_prfx=execution_metadata.project_prfx,
                                                                project_input_files=execution_metadata.project_input_files)
@@ -106,7 +106,7 @@ class SgaDaemon(Daemon):
 
         self.execution_stdout = open("/tmp/out.txt", "w")
 
-        self.__send_status("Running")
+        self.__send_status(execution_metadata, "Running")
         return executor.execute(executor.Execution(
             algorithm_executable=execution_metadata.algorithm_executable_name,
             algorithm_params=execution_metadata.algorithm_parameters,
@@ -118,9 +118,9 @@ class SgaDaemon(Daemon):
         ))
 
     def __end_execution(self, execution_metadata):
-        self.__send_status("Uploading")
+        self.__send_status(execution_metadata, "Uploading")
         self.sandbox_manager.upload_project_modified_files(execution_metadata.project_prfx)
-        self.__send_status("Ended")
+        self.__send_status(execution_metadata, "Ended")
 
     def __cancel_execution(self, running_process):
         counter = 30
@@ -135,8 +135,9 @@ class SgaDaemon(Daemon):
     def __check_cancel_request(self, execution_metadata):
         return
 
-    def __send_status(self, main_status):
-        self.connector.send_status(main_status)
+    def __send_status(self, execution_metadata, main_status):
+        status_message = "{cmdId:\"" + execution_metadata.command_id + "\", status:\""+main_status+"\"}"
+        self.connector.send_status(status_message)
 
     def __shutdown_myself(self):
         self.connector.shutdown_myself()
