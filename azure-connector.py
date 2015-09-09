@@ -198,8 +198,6 @@ class AzureConnector():
 
     def shutdown_myself(self):
 
-        return
-
         # A máquina virtual irá cometer suicídio.
         print("Removendo máquina virtual da nuvem...")
         for tries in range(1,5):
