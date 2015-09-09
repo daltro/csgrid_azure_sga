@@ -66,7 +66,7 @@ def execute(execution):
               preexec_fn=__demote(user_uid, user_gid),
               stdout=execution.stdout,
               stderr=execution.stderr,
-              shell=True)
+              env={"HOME":"/home/"+execution.os_username})
 
     return p
 
