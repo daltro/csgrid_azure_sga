@@ -65,7 +65,8 @@ def execute(execution):
               args=params,
               preexec_fn=__demote(user_uid, user_gid),
               stdout=execution.stdout,
-              stderr=execution.stderr)
+              stderr=execution.stderr,
+              shell=True)
 
     return p
 
