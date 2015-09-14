@@ -85,7 +85,8 @@ class SgaDaemon(Daemon):
                             self.__send_status(execution_metadata, "Canceled")
                         else:
                             # Execução acontecendo normalmente...
-                            self.__send_status(execution_metadata, "Running")
+                            # self.__send_status(execution_metadata, "Running")
+                            time.sleep(1)
 
                 time.sleep(polling_time_secs)
 
